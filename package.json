@@ -1,0 +1,32 @@
+{
+    "name": "data-grabber",
+    "version": "0.0.1",
+    "description": "Data Grabber.",
+    "keywords": [
+        "data",
+        "grabber",
+        "scraper",
+        "scraping",
+        "web"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/prathamesh7pute/data-grabber.git"
+    },
+    "bugs": {
+        "url": "git://github.com/prathamesh7pute/data-grabber/issues"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "express": "4.10.1",
+        "scraperjs": "0.3.1",
+        "body-parser": "1.9.2"
+    },
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "engines": {
+        "node": ">=0.10"
+    }
+}

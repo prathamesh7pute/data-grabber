@@ -1,0 +1,194 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Grabber</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+<body ng-controller="Grabber">
+
+<div class="container">
+    <h1>Data Grabber</h1>
+
+    <div>
+
+        <form role="form">
+            <div class="form-group">
+                <label for="url">URL to grab data</label>
+                <input id="url" type="text" class="form-control" placeholder="url to grab data" ng-model="grabber.url">
+            </div>
+
+            <div class="form-group">
+                <label for="listRoot">Root element of the list</label>
+                <input id="listRoot" type="text"  class="form-control" placeholder="root tag of of list" ng-model="grabber.listRoot">
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4"><label>Field Name</label></div>
+                    <div class="col-md-4"><label>Field Path</label></div>
+                    <div class="col-md-4"><label>Field Attribute</label></div>
+                </div>
+
+                <div ng-repeat="field in grabber.fields" class="row">
+                    <div class="col-md-4"><input type="text" class="form-control" placeholder="field name..." ng-model="field.name"></div>
+                    <div class="col-md-4"><input type="text" class="form-control" class="form-control" placeholder="field tag path..." ng-model="field.path"></div>
+                    <div class="col-md-4"><input type="text" class="form-control" placeholder="(optional) attr - href for a, src for img.... " ng-model="field.attr"></div>
+                </div>
+
+                <button class="btn btn-primary" ng-click="add()">New Field</button>
+            </div>
+
+        </form>
+
+        <button class="btn btn-success" ng-click="grab()">Grab Data</button>
+        <button class="btn btn-success" ng-show="results.length" ng-click="generateCSV()">Download CSV</button>
+
+    </div>
+
+</div>
+
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th ng-repeat="field in grabber.fields">{{field.name}}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="result in results">
+            <td ng-repeat="field in grabber.fields">{{result[field.name]}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+
+<script type="text/javascript">
+
+
+    function JSON2CSV(objArray) {
+        var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+
+        var str = '';
+        var line = '';
+        var isLabels = true;
+        var isQuote = true;
+
+        if (isLabels) {
+            var head = array[0];
+            if (isQuote) {
+                for (var index in array[0]) {
+                    var value = index + "";
+                    line += '"' + value.replace(/"/g, '""') + '",';
+                }
+            } else {
+                for (var index in array[0]) {
+                    line += index + ',';
+                }
+            }
+
+            line = line.slice(0, -1);
+            str += line + '\r\n';
+        }
+
+        for (var i = 0; i < array.length; i++) {
+            var line = '';
+
+            if (isQuote) {
+                for (var index in array[i]) {
+                    var value = array[i][index] + "";
+                    line += '"' + value.replace(/"/g, '""') + '",';
+                }
+            } else {
+                for (var index in array[i]) {
+                    line += array[i][index] + ',';
+                }
+            }
+
+            line = line.slice(0, -1);
+            str += line + '\r\n';
+        }
+        return str;
+
+    }
+
+
+    var Grabber = function($scope, $http) {
+
+        $scope.grabber = {
+            url: 'http://www.myntra.com/biba-flat-40-offer?utm_source=aff&utm_medium=aff-tyroo&utm_campaign=homepage&aff=7820',
+            listRoot: '.results li',
+            fields: [
+                {
+                    name: 'brand',
+                    path: '.brand'
+                },
+                {
+                    name: 'product',
+                    path: '.product'
+                },
+                {
+                    name: 'price',
+                    path: '.strike'
+                },
+                {
+                    name: 'discount',
+                    path: '.discount'
+                },
+                {
+                    name: 'sizes',
+                    path: '.sizes'
+                },
+                {
+                    name: 'link',
+                    path: 'a',
+                    attr: 'href'
+                },
+                {
+                    name: 'imgSrc',
+                    path: 'a img',
+                    attr: 'src'
+                }
+            ]
+        };
+
+        $scope.add = function () {
+            $scope.grabber.fields.push({
+                name: "",
+                path: "",
+                attr: ""
+            });
+        };
+
+        $scope.result = [];
+
+
+        $scope.grab = function () {
+
+            $http.post('/grab', $scope.grabber).
+                    success(function(data, status, headers, config) {
+                        $scope.results = data;
+                    }).
+                    error(function(data, status, headers, config) {
+                        $scope.error = 'Error occurred while fetching data';
+                    });
+        };
+
+
+        $scope.generateCSV = function() {
+            var csv = JSON2CSV($scope.results);
+            window.open("data:text/csv;charset=utf-8," + escape(csv))
+        };
+
+    }
+
+</script>
+
+
+
+</body>
+</html>
